@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "db"
+version = "0.1.0"
+description = ""
+authors = ["tofickbrodaga <mshdtlv@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aio-pika = "^9.5.0"
+pydantic-settings = "^2.6.1"
+sqlalchemy = "^2.0.36"
+asyncpg = "^0.30.0"
+greenlet = "^3.1.1"
+alembic = "^1.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

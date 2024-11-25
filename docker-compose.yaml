@@ -1,0 +1,50 @@
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:${RABBIT_PORT}:5672
+      - ${RABBIT_WEB_PORT}:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_DEFAULT_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  bot_postgres:
+    image: 'postgres:15.5'
+    container_name: bot_postgres
+    environment:
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-d", "${DB_NAME}", "-U", "${DB_USER}" ]
+      interval: 1s
+      timeout: 1s
+      retries: 60
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot_migrates:
+    build: ./db
+    container_name: bot_migrates
+    environment:
+      - POSTGRES_HOST=${DB_HOST}
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    command: python3 -m alembic upgrade head
+    depends_on:
+      bot_postgres:
+        condition: service_healthy
+
+volumes:
+    rabbitmq_data: 
+    pgdata:
